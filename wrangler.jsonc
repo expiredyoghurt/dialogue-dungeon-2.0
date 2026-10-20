@@ -1,0 +1,46 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dialogue-dungeon",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+
+  // Static front end (public/) is served directly; /api/* always runs the Worker first.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+
+  // 1) Run:  npx wrangler d1 create dialogue-dungeon   2) paste the database_id it prints below.
+  "d1_databases": [
+    { "binding": "DB", "database_name": "dialogue-dungeon", "database_id": "7ff5dafb-5732-4f88-89fa-ab0b5d3514ff" }
+  ],
+
+  // Workers AI: only used when a pupil types a verb that is not in the verb bank (Mode 3).
+  "ai": { "binding": "AI" },
+
+  // Dungeon Dive (co-op parties): one Durable Object per party. The class is exported from src/index.js.
+  "durable_objects": { "bindings": [{ "name": "DIVE", "class_name": "DiveParty" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DiveParty"] }],
+
+  // Throttle sign-in guessing and guest creation (per IP). Remove if you prefer a WAF rate-limit rule.
+  "ratelimits": [
+    { "name": "RL_LOGIN", "namespace_id": "4201", "simple": { "limit": 15, "period": 60 } },
+    { "name": "RL_GUEST", "namespace_id": "4202", "simple": { "limit": 6, "period": 60 } }
+  ],
+
+  // Daily clean-up of old guest accounts (03:00 Singapore time).
+  "triggers": { "crons": ["0 19 * * *"] },
+
+  "vars": {
+    "AI_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    "AI_CONFIDENCE_MIN": "0.8",
+    "AI_DAILY_CAP": "300",
+    "GUEST_RETENTION_DAYS": "30"
+  },
+
+  // Set these with `npx wrangler secret put <NAME>` before class use:
+  //   teacher_user, teacher_password            (required)
+  //   session_secret                            (optional; random string used to sign sign-in tokens)
+  "secrets": { "required": ["teacher_user", "teacher_password"] }
+}
