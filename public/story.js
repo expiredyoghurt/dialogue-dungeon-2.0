@@ -23,9 +23,11 @@ const voiceBars = (st) => {
   return w;
 };
 
-function storyCard() {
+// The Hush lives in a tab on the village character box: hushLabel() is the tab's text, storyPanel() is its contents.
+const hushLabel = () => '🔇 The Hush' + (qon() && S.story.pending.length ? ' · ' + S.story.pending.length + ' new' : '');
+function storyPanel() {
   if (!qon()) return null;
-  const st = S.story, c = el('div', 'card sc-card');
+  const st = S.story, c = el('div', 'sc-panel');
   c.id = 'storycard';
   const h = el('div', 'row');
   h.append(quipGlyph(), el('h3', 'grow', 'The Hush'));
@@ -41,7 +43,12 @@ function storyCard() {
   c.append(el('p', 'm', st.next || '✨ You have read every part so far. The story is not over, because a staircase leads below Floor 100.'));
   return c;
 }
-const storyRefresh = () => { const old = document.getElementById('storycard'); const n = storyCard(); if (old && n) old.replaceWith(n); };
+const storyRefresh = () => {
+  const old = document.getElementById('storycard'), n = storyPanel();
+  if (old && n) old.replaceWith(n);
+  const tb = document.getElementById('tab-hush');
+  if (tb) tb.textContent = hushLabel();
+};
 
 function storyDialog(id) {
   const old = document.getElementById(id);

@@ -39,6 +39,14 @@ button.tok{background:none;color:inherit;padding:0 3px;border:0;border-bottom:1p
 /* v1.8 wrong-answer feedback */
 .fbk{margin-top:8px}.prog{font-weight:700}.mkw{display:inline;line-height:1.9}.mkw .bad{background:#5a1f2e;border-bottom:2px wavy var(--bad);border-radius:3px;padding:0 2px}.mkw .gh{color:var(--bad);font-weight:700;padding:0 2px}
 .xp{border:1px dashed #77669a;border-radius:8px;padding:6px 10px;margin:8px 0}.xb{color:var(--bad)}.xg{color:var(--ok)}
+/* v1.10 village: tabs on the character box + the big descend box */
+.vtabs{margin-top:12px;padding-top:10px;border-top:1px solid #3a2f52}.vtabs button{font-size:15px}.vbody{margin-top:8px;padding:10px 12px;background:#1b1428;border:1px solid #3a2f52;border-radius:10px}.vbody[hidden]{display:none}.vbody h3:first-child{margin-top:0}
+.sc-panel{border-left:4px solid var(--g);padding-left:10px}
+.descend{border:2px solid var(--g);background:linear-gradient(#2d2140,#231b33);box-shadow:0 0 18px rgba(242,193,78,.25);text-align:center}.descend h2{font-size:26px}.descend .row{justify-content:center}.descend .bar{max-width:420px;margin:4px auto 10px}
+.dd-kick{display:inline-block;background:var(--g);color:#14101c;font:700 13px/1 system-ui,sans-serif;letter-spacing:.06em;border-radius:20px;padding:6px 12px;margin-bottom:6px}
+button.go{display:block;width:100%;max-width:420px;margin:8px auto;background:var(--g);color:#14101c;font:700 22px/1.2 Georgia,serif;padding:16px 20px;border-radius:12px;animation:godown 2s ease-in-out infinite}button.go:hover{filter:brightness(1.1)}
+@keyframes godown{50%{transform:translateY(3px);box-shadow:0 8px 18px rgba(242,193,78,.45)}}
+@media (prefers-reduced-motion:reduce){button.go{animation:none}}
 </style></head><body><main id="app"></main><script src="/story.js"></script><script>
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
 const app=document.getElementById('app');let token=sessionStorage.dd||'',S=null,dl=0,busy=false,scr=null,U={};
@@ -87,8 +95,7 @@ function help(tab){const old=document.getElementById('help');if(old)old.remove()
  [['how','How to play'],['modes','Question types'],['rules','The rules']].forEach(([t,l])=>{const b=el('button',0,l);b.dataset.t=t;b.onclick=()=>show(t);tabs.append(b)});
  const top=el('div','row'),x=el('button','alt','Close');x.onclick=()=>d.close();top.append(el('h2','grow','❓ Help'),x);
  d.append(top,tabs,body);d.onclick=e=>{if(e.target===d)d.close()};d.onclose=()=>{d.remove();try{localStorage.ddHelp='1'}catch(e){}};document.body.append(d);show(tab||'how');d.showModal()}
-function feedback(where){const old=document.getElementById('fb');if(old)old.remove();const d=el('dialog');d.id='fb';let kind='difficulty',rating='';
- const top=el('div','row'),x=el('button','alt','Close');x.onclick=()=>d.close();top.append(el('h2','grow','💬 Tell the developer'),x);
+function fbForm(where){let kind='difficulty',rating='';
  const KS=[['difficulty','🎚️ Difficulty'],['suggestion','💡 Idea'],['bug','🐞 Problem'],['other','💬 Other']],RS=[['too_easy','😴 Too easy'],['just_right','👌 About right'],['too_hard','😵 Too hard']];
  const kinds=el('div','tabs'),rr=el('div','tabs'),ta=el('textarea'),cnt=el('div','m'),msg=el('div'),send=el('button',0,'Send'),form=el('div');
  ta.rows=5;ta.maxLength=600;
@@ -99,8 +106,11 @@ function feedback(where){const old=document.getElementById('fb');if(old)old.remo
  ta.oninput=sync;
  send.onclick=async()=>{msg.replaceChildren();send.disabled=true;try{await api('/api/feedback','POST',{kind,rating:kind==='difficulty'?rating:'',message:ta.value,where});form.replaceChildren(el('h3','good','✅ Thank you!'),el('p','m',qon()?'Quip has flown your message to your teacher, who looks after the game.':'Your message has been sent to your teacher, who looks after the game.'))}catch(e){msg.replaceChildren(el('p','badc',e.message));send.disabled=false}};
  form.append(el('p','m','What is your feedback about?'),kinds,el('p','m','How does the game feel right now?'),rr,ta,cnt,msg,send,el('p','m','Your teacher will see your name and what level you are, not your password.'));
+ return{form,sync}}
+function feedback(where){const old=document.getElementById('fb');if(old)old.remove();const d=el('dialog');d.id='fb';
+ const top=el('div','row'),x=el('button','alt','Close');x.onclick=()=>d.close();top.append(el('h2','grow','💬 Tell the developer'),x);const{form,sync}=fbForm(where);
  d.append(top,...((S&&S.fight)||DV?[el('p','m','⏱️ The fight clock keeps running while this is open.')]:[]),form);d.onclick=e=>{if(e.target===d)d.close()};d.onclose=()=>d.remove();document.body.append(d);sync();d.showModal()}
-const helpRow=()=>{const r=el('div','row'),a=el('button','alt','❓ How to play'),b=el('button','alt','📖 Rules'),c=el('button','alt','💬 Feedback');a.onclick=()=>help('how');b.onclick=()=>help('rules');c.onclick=()=>feedback('village');r.append(a,b,c);return r};
+const helpRow=()=>{const r=el('div','row'),a=el('button','alt','❓ How to play'),b=el('button','alt','📖 Rules');a.onclick=()=>help('how');b.onclick=()=>help('rules');r.append(a,b);return r};
 const bar=(c,p)=>{const b=el('div','bar '+c),i=el('i'),g=el('b');i.style.width=g.style.width=Math.max(0,Math.min(100,p))+'%';b.append(i,g);return b};
 let dlP=0,dlM=0,pend=0,q0=Promise.resolve(),motion=!matchMedia('(prefers-reduced-motion: reduce)').matches;
 const setDl=()=>{if(S&&S.fight){const n=performance.now(),f=S.fight;dlP=n+f.pNext-f.now;dlM=n+f.mNext-f.now}};
@@ -114,19 +124,33 @@ async function auth(p,b){try{const d=await api(p,'POST',b);token=d.token;session
 async function boot(){try{await metaP;S=await api('/api/game/state');go()}catch(e){login(e.message)}}
 function go(){PR=null;setDl();S.fight?fight():S.ended?end():(scr||village)()}
 async function act(p,b){try{S=await api('/api/game/'+p,'POST',b||{});go()}catch(e){alert(e.message)}}
-function village(){scr=village;const m=S.me;app.replaceChildren();const c=el('div','card');
+let vtab='';
+function village(){scr=village;const m=S.me;app.replaceChildren();
+ if(!(()=>{try{return localStorage.ddHelp}catch(e){return 1}})()){const nb=el('div','card banner');nb.append(el('b',0,'👋 New here?'),el('p','m','Read how the game works and the dialogue rules before your first fight.'));const nbb=el('button',0,'How to play');nbb.onclick=()=>help('how');nb.append(nbb);app.append(nb)}
+ // 1. the player character box, with tabs for everything that used to be separate cards
+ const c=el('div','card');c.id='charcard';
  c.append(pimg(m.job,84),el('h2',0,'🏘️ '+m.name+' · '+S.jobTree[m.job].n+' · Lv '+m.level),el('div','m','HP '+m.hp+'/'+m.maxHp),bar('',m.hp/m.maxHp*100),el('div','m','XP '+m.xp+'/'+m.need),bar('x',m.xp/m.need*100),el('p',0,'💰 '+m.gold+'   ⚔️ hits 1 to '+m.atk+'   🛡️ '+m.def+' armour'),...(csLine(m.cs)||m.sure?[el('div','m','✨ '+[csLine(m.cs),m.sure?'Sure hit (ignores monster dodge)':''].filter(Boolean).join(' · '))]:[]));
  if(m.gentle)c.append(el('p','m','🌱 Beginner boost until level '+m.gentle.until+': ×'+m.gentle.gold+' gold, ×'+m.gentle.xp+' XP, and weaker monsters.'));
- if(!(()=>{try{return localStorage.ddHelp}catch(e){return 1}})()){const nb=el('div','card banner');nb.append(el('b',0,'👋 New here?'),el('p','m','Read how the game works and the dialogue rules before your first fight.'));const nbb=el('button',0,'How to play');nbb.onclick=()=>help('how');nb.append(nbb);app.append(nb)}
  const pb=el('button',0,'👤 Profile & jobs'+(m.free?' ('+m.free+' job point!)':'')),prb=el('button','alt','🏛️ Guild Training Grounds');pb.onclick=profile;prb.onclick=practiceRoom;c.append(pb,' ',prb,' ');{const r=helpRow();[...r.children].forEach(b=>c.append(b,' '))}
- const f=el('div','card');f.append(el('h3',0,'Dungeon'));
- const F=S.floors,r0=el('div','row'),fi=el('input');fi.type='number';fi.min=1;fi.max=F.max;fi.value=F.max;fi.style.width='6em';const info=el('p','m'),pr=n=>F.kills['n'+n]==null?'not explored yet':(F.kills[n]||0)+' of '+F.kills['n'+n]+' monsters defeated',clamp=()=>Math.min(F.max,Math.max(1,Math.round(+fi.value||1))),upd=()=>{const n=clamp();info.textContent='Floor '+n+': '+pr(n)+'. Defeat every monster to find the stairs down.'+(F.respawn?' If you flee or are defeated before the floor is cleared, its monsters respawn.'+(qon()?' The Hollow knits itself shut behind you.':''):'')+' Floor N monsters are level 1 to N; every 5th floor ends with a mid-boss and every 10th with a boss.'};fi.oninput=upd;const eb=el('button',0,'Enter floor');eb.onclick=()=>act('start',{floor:clamp()});r0.append('Floor ',fi,' of '+F.max+' unlocked ',eb);
- upd();f.append(r0,info);
- const s=el('div','card');s.append(el('h3',0,'🛒 Adventurer shop · level '+m.stage+' of 4'));
- if(m.stage<m.stageMax){const c0=S.shopCost[m.stage-1],ub=el('button',0,'⬆️ Upgrade the shop to level '+(m.stage+1)+' — '+c0+' gold');ub.disabled=m.gold<c0;ub.onclick=()=>act('upgrade');s.append(ub)}
- else s.append(el('p','m',['Unlock the Adventurer job to be able to upgrade the shop.','Unlock a branch class (Fighter, Archer or Acolyte) to upgrade the shop again.','Unlock a top-tier class from one of your jobs for the final upgrade.','The shop is fully upgraded!'][m.stage-1]));
- S.shop.map(id=>[id,S.items[id]]).forEach(([id,i])=>{const own=i.slot!=='use'&&S.inv[id],r=el('div','row');r.append(el('span','grow',i.e+' '+i.n+' — '+st(i)+(i.slot==='use'?' (have '+(S.inv[id]||0)+')':'')));const b=el('button','alt',own?'Owned':'Buy '+i.price+'g');b.disabled=!!own||m.gold<i.price;b.onclick=()=>act('buy',{item:id});r.append(b);s.append(r)});
- if(S.dive){const d=el('div','card');d.append(el('h3',0,'🧭 Dungeon Dive'),el('p','m','Team up with up to 3 friends and fight an endless dungeon together.'));const db=el('button',0,dcode?'Back to your party ('+dcode+')':'Enter Dungeon Dive');db.onclick=dcode?dvResume:diveHome;d.append(db);app.append(c,d,f,s)}else app.append(c,f,s);{const sc=storyCard();if(sc)c.after(sc)}const bn=document.querySelector('.banner');if(bn)app.prepend(bn);pracBanner();storyAuto()}
+ const shopPanel=()=>{const s=el('div');s.append(el('h3',0,'🛒 Adventurer shop · level '+m.stage+' of 4'));
+  if(m.stage<m.stageMax){const c0=S.shopCost[m.stage-1],ub=el('button',0,'⬆️ Upgrade the shop to level '+(m.stage+1)+' — '+c0+' gold');ub.disabled=m.gold<c0;ub.onclick=()=>act('upgrade');s.append(ub)}
+  else s.append(el('p','m',['Unlock the Adventurer job to be able to upgrade the shop.','Unlock a branch class (Fighter, Archer or Acolyte) to upgrade the shop again.','Unlock a top-tier class from one of your jobs for the final upgrade.','The shop is fully upgraded!'][m.stage-1]));
+  S.shop.map(id=>[id,S.items[id]]).forEach(([id,i])=>{const own=i.slot!=='use'&&S.inv[id],r=el('div','row');r.append(el('span','grow',i.e+' '+i.n+' — '+st(i)+(i.slot==='use'?' (have '+(S.inv[id]||0)+')':'')));const b=el('button','alt',own?'Owned':'Buy '+i.price+'g');b.disabled=!!own||m.gold<i.price;b.onclick=()=>act('buy',{item:id});r.append(b);s.append(r)});return s};
+ const divePanel=()=>{const d=el('div');d.append(el('h3',0,'🧭 Dungeon Dive'),el('p','m','Team up with up to 3 friends and fight an endless dungeon together.'));const db=el('button',0,dcode?'Back to your party ('+dcode+')':'Enter Dungeon Dive');db.onclick=dcode?dvResume:diveHome;d.append(db);return d};
+ const T=[];if(S.dive)T.push(['dive','🧭 Dungeon Dive']);T.push(['shop','🛒 Adventurer shop']);if(qon())T.push(['hush',hushLabel()]);T.push(['fb','💬 Feedback']);
+ if(!T.some(([t])=>t===vtab))vtab='';
+ const tabs=el('div','tabs vtabs'),body=el('div','vbody');tabs.setAttribute('role','tablist');
+ const showTab=()=>{[...tabs.children].forEach(b=>{const on=b.dataset.t===vtab;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on))});body.replaceChildren();body.hidden=!vtab;
+  if(vtab==='dive')body.append(divePanel());else if(vtab==='shop')body.append(shopPanel());else if(vtab==='hush'){const sp=storyPanel();if(sp)body.append(sp)}
+  else if(vtab==='fb'){const x=fbForm('village');body.append(el('h3',0,'💬 Tell the developer'),x.form);x.sync()}};
+ T.forEach(([t,l])=>{const b=el('button',0,l);b.id='tab-'+t;b.dataset.t=t;b.setAttribute('role','tab');b.onclick=()=>{vtab=vtab===t?'':t;showTab()};tabs.append(b)});
+ c.append(tabs,body);showTab();
+ // 2. the big "go down" box
+ const F=S.floors,f=el('div','card descend'),fresh=F.max===1&&!(F.kills&&F.kills[1]);f.id='descend';
+ const r0=el('div','row'),fi=el('input');fi.type='number';fi.min=1;fi.max=F.max;fi.value=F.max;fi.style.width='6em';fi.setAttribute('aria-label','Floor to enter');const info=el('p','m'),pr=n=>F.kills['n'+n]==null?'not explored yet':(F.kills[n]||0)+' of '+F.kills['n'+n]+' monsters defeated',clamp=()=>Math.min(F.max,Math.max(1,Math.round(+fi.value||1))),eb=el('button','go'),upd=()=>{const n=clamp();eb.textContent='⬇️ Descend to Floor '+n;info.textContent='Floor '+n+': '+pr(n)+'. Defeat every monster to find the stairs down.'+(F.respawn?' If you flee or are defeated before the floor is cleared, its monsters respawn.'+(qon()?' The Hollow knits itself shut behind you.':''):'')+' Floor N monsters are level 1 to N; every 5th floor ends with a mid-boss and every 10th with a boss.'};fi.oninput=upd;eb.onclick=()=>act('start',{floor:clamp()});r0.append('Floor ',fi,' of '+F.max+' unlocked');
+ upd();
+ f.append(el('div','dd-kick',fresh?'👉 START HERE':'🪜 YOUR GOAL: GO DEEPER'),el('h2',0,'Descend the dungeon'),el('p',0,fresh?'Your adventure begins below the village. Fight your way down: every monster you beat earns gold, XP and loot, and clearing a floor reveals the stairs to the next one.':'The dungeon is where you grow. Keep descending: every floor you clear unlocks the next, with tougher monsters and better loot.'),el('div','m','Deepest floor unlocked: '+F.max+' of '+F.total),bar('x',F.max/F.total*100),r0,eb,info);
+ app.append(c,f);pracBanner();storyAuto()}
 function profile(){scr=profile;const m=S.me,J=S.jobTree,ch=j=>{const c=[];for(let y=j;y;y=J[y]&&J[y].p)c.push(y);return c},ok=i=>!i.fam||ch(m.job).includes(i.fam)||(m.job==='adventurer'&&i.slot==='weapon'&&i.st===3);app.replaceChildren();const c=el('div','card');
  c.append(pimg(m.job,120),el('h2',0,'👤 '+m.name+' · Lv '+m.level),el('p',0,J[m.job].e+' '+J[m.job].n+': base damage '+m.base+' + weapon = up to '+m.atk+' per hit · armour '+m.def),el('p','m','Perks: '+(ptxt(m.perks)||'none')));
  [['weapon','🗡️ Weapon','weapon'],['armor','🛡️ Armour','armor'],['acc','💍 Accessory','acc'],['potion','🧪 Potion','use']].forEach(([k,l,kind])=>{const r=el('div','row');r.append(el('b','grow',l));const sel=el('select');sel.append(new Option('— none —',''));for(const[id,q]of Object.entries(S.inv)){const i=S.items[id];if(i.slot===kind&&ok(i))sel.append(new Option(i.n+' ('+(kind==='use'?'×'+q+', ':'')+st(i)+')',id))}sel.value=m[k]||'';sel.onchange=()=>act('slot',{slot:k,item:sel.value||null});r.append(sel);c.append(r)});
@@ -274,7 +298,7 @@ go_.onclick=()=>send(false);sk.onclick=()=>send(true);inp.onkeydown=e=>{if(e.key
 /* v1.8 Adventurers' Guild Training Grounds: deliberate practice of one rule at a time, against training monsters */
 let PR=null;const LVI={new:'○',learning:'◔',developing:'◑',secure:'●'};
 const toVillage=async()=>{try{S=await api('/api/game/state')}catch(e){}scr=village;go()};
-async function pracBanner(){try{const d=await api('/api/practice/map');if(scr!==village)return;const a=d.assigned.filter(x=>!x.complete),ready=d.rules.filter(r=>r.bonus==='ready'||r.bonus==='active');if(!a.length&&!ready.length)return;const b=el('div','card banner');b.append(el('b',0,'🏛️ Guild Training Grounds'));a.forEach(x=>b.append(el('p','m','📌 From your teacher: '+x.name+', '+x.done+' of '+x.target+' right first time'+(x.due?' (due '+new Date(x.due).toLocaleDateString()+')':''))));if(ready.length)b.append(el('p','m','⭐ Double XP today for your weakest skills: '+ready.map(r=>r.short).join(', ')));const g=el('button',0,'Go to the Training Grounds');g.onclick=practiceRoom;b.append(g);app.prepend(b)}catch(e){}}
+async function pracBanner(){try{const d=await api('/api/practice/map');if(scr!==village)return;const a=d.assigned.filter(x=>!x.complete),ready=d.rules.filter(r=>r.bonus==='ready'||r.bonus==='active');if(!a.length&&!ready.length)return;const b=el('div','card banner');b.append(el('b',0,'🏛️ Guild Training Grounds'));a.forEach(x=>b.append(el('p','m','📌 From your teacher: '+x.name+', '+x.done+' of '+x.target+' right first time'+(x.due?' (due '+new Date(x.due).toLocaleDateString()+')':''))));if(ready.length)b.append(el('p','m','⭐ Double XP today for your weakest skills: '+ready.map(r=>r.short).join(', ')));const g=el('button',0,'Go to the Training Grounds');g.onclick=practiceRoom;b.append(g);b.id='pracban';const old=document.getElementById('pracban');if(old)old.remove();const cc=document.getElementById('charcard');if(cc)cc.after(b);else app.prepend(b)}catch(e){}}
 async function practiceRoom(){scr=practiceRoom;PR=null;app.replaceChildren();const c=el('div','card');const bk=el('button','alt','← Back to the village');bk.onclick=toVillage;app.append(c);
 let d;try{d=await api('/api/practice/map')}catch(e){c.append(el('h2',0,'🏛️ Guild Training Grounds'),el('p','badc',e.message),bk);return}
 const T=d.training;c.append(el('h2',0,'🏛️ Adventurers’ Guild · Training Grounds'),el('p','m','The guild keeps training monsters for adventurers who want to sharpen one skill. Each round starts with a worked example, then monsters that climb from easy to hard. A wrong answer shows you what to fix and you can try again.'),el('p','m','🗡️ Training monsters are as strong as you (up to level '+T.levelCap+') and pay '+T.xpMult+'× the XP of a dungeon monster of that level. They carry no gold and drop nothing, and they can’t hurt you.'),el('p','m','⭐ The first time you train each of your weakest skills today, the XP is '+T.bonusMult+'×.'),el('p','m','Monsters that pay XP today: '+T.today+' of '+T.cap+'.'));
