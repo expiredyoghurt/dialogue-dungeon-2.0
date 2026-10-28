@@ -8,6 +8,7 @@
 //   Epilogue          unlocks with the Act 10 Reckoning.
 //   Mid-boss notes    short found notes on floors 5, 15, 25 ... 95, unlocked when that floor is cleared.
 //
+// Scenes open strictly in this order (see openScenes), so nothing is ever readable ahead of the pupil's progress.
 // Nothing here needs a database change: what is unlocked is worked out from the pupil's level and floor_kills,
 // and the scenes a pupil has already been shown are kept in floor_kills.sty (a list of scene ids).
 // The text of a scene only leaves the server once it is unlocked (see storyState), like the job tree.
@@ -220,14 +221,16 @@ export const SCENES = [
 
 const isCleared = (fk, n) => fk['n' + n] != null && (fk[n] || 0) >= fk['n' + n];
 const unlocked = (s, level, fk) => level >= s.level && (s.floor === 0 || s.kind === 'calling' || isCleared(fk, s.floor));
+// The story is strictly in order: a scene is only open once every scene before it is open, so a pupil who levels up
+// without descending can never read ahead of the floor they have actually cleared.
+const openScenes = (level, fk) => { const i = SCENES.findIndex((s) => !unlocked(s, level, fk)); return i < 0 ? { have: SCENES, locked: null } : { have: SCENES.slice(0, i), locked: SCENES[i] }; };
 
 // What a pupil is told about the story. `brief` (sent with every game state) carries no text, only what the village card needs.
 // `full` adds the text of every unlocked scene and found note, and is only sent when the pupil opens or plays the story.
 export function storyState(level, fk, on, full = false) {
   if (!on) return { on: false };
   const seen = new Set(Array.isArray(fk.sty) ? fk.sty : []);
-  const have = SCENES.filter((s) => unlocked(s, level, fk));
-  const locked = SCENES.find((s) => !unlocked(s, level, fk));
+  const { have, locked } = openScenes(level, fk);
   const wren = have.reduce((best, s) => (WREN[s.id] && WREN[s.id][0] >= best[0] ? WREN[s.id] : best), WREN.p0);
   const reckonings = have.filter((s) => s.kind === 'reckoning').length;
   const next = !locked ? null : level < locked.level ? 'Reach Level ' + locked.level + ' to hear the next part of the story.' : 'Defeat the boss on Floor ' + locked.floor + ' to see what happens next.';
@@ -244,14 +247,14 @@ export function storyState(level, fk, on, full = false) {
   if (full) {
     out.seen = [...seen];
     out.scenes = have.map((s) => ({ id: s.id, act: s.act, kind: s.kind, title: s.title, actTitle: s.actTitle || '', zone: s.zone || '', level: s.level, floor: s.floor, text: s.text, after: s.after || null, choice: s.choice || null, objective: s.kind === 'calling' ? { floor: s.floor, done: isCleared(fk, s.floor) } : null }));
-    out.notes = NOTES.filter((n) => isCleared(fk, n.floor)).map((n) => ({ floor: n.floor, act: Math.ceil(n.floor / 10), boss: n.boss, text: n.text }));
+    out.notes = NOTES.filter((n) => isCleared(fk, n.floor) && have.some((s) => s.id === 'c' + Math.ceil(n.floor / 10))).map((n) => ({ floor: n.floor, act: Math.ceil(n.floor / 10), boss: n.boss, text: n.text }));
   }
   return out;
 }
 
 // Record that a pupil has been shown some scenes. Only ids that are really unlocked are kept. Returns true if fk changed.
 export function markSeen(level, fk, ids) {
-  const ok = new Set(SCENES.filter((s) => unlocked(s, level, fk)).map((s) => s.id));
+  const ok = new Set(openScenes(level, fk).have.map((s) => s.id));
   const seen = new Set(Array.isArray(fk.sty) ? fk.sty : []);
   const before = seen.size;
   for (const id of Array.isArray(ids) ? ids : []) if (typeof id === 'string' && ok.has(id)) seen.add(id);
