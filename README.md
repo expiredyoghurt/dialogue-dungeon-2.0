@@ -1,6 +1,12 @@
-# Dialogue Dungeon v1.9.1
+# Dialogue Dungeon v1.10.0
 
 Arcade-RPG dialogue-writing practice on Cloudflare Workers + D1 + Durable Objects.
+
+## What is new in v1.10 (village screen)
+
+- The pupil's starting page is now: character box (with tabs) → Guild Training Grounds prompt (only when there is an assignment or bonus) → a big "Descend the dungeon" box.
+- Dungeon Dive, the Adventurer shop, The Hush and Feedback are tabs on the character box (click a tab again to close it). The Hush tab shows how many new story parts are waiting.
+- The story is now strictly in order on the server (`openScenes` in `src/story.js`): a scene opens only when every scene before it is open, so "The story so far..." can never show an act the pupil has not reached by clearing the previous boss floor. Mid-boss notes stay hidden until their act has started.
 
 ## What is new in v1.9.x (teacher accounts)
 (v1.9.1: the teacher console no longer waits on the server to draw itself after a reload, and shows the real error if something fails instead of sitting on "Loading…".)
