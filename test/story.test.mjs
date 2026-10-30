@@ -60,12 +60,22 @@ test('a boss beaten before the level is reached is held back, so a Reckoning nev
   assert.deepEqual(later.pending.map((p) => p.id), ['p0', 'c1', 'r1']); // Calling first, then the Reckoning
 });
 
-test('a pupil who levels up without descending only sees Callings, with the floor objective', () => {
+test('a pupil who levels up without descending can only read as far as the next boss floor they have not cleared', () => {
   const s = storyState(35, {}, true, true);
-  assert.deepEqual(s.scenes.map((x) => x.id), ['p0', 'c1', 'c2', 'c3']);
-  assert.equal(s.scenes[3].objective.floor, 30);
-  assert.equal(s.scenes[3].objective.done, false);
+  assert.deepEqual(s.scenes.map((x) => x.id), ['p0', 'c1']); // Act 2 and 3 stay locked until Floor 10 is cleared
+  assert.equal(s.scenes[1].objective.floor, 10);
+  assert.equal(s.scenes[1].objective.done, false);
   assert.equal(s.parley.pct, 0);
+  assert.equal(s.next, 'Defeat the boss on Floor 10 to see what happens next.');
+  assert.ok(!JSON.stringify(s).includes('Rumour'));
+  const t = storyState(35, cleared(10), true, true);
+  assert.deepEqual(t.scenes.map((x) => x.id), ['p0', 'c1', 'r1', 'c2']);
+  assert.equal(t.next, 'Defeat the boss on Floor 20 to see what happens next.');
+});
+
+test('mid-boss notes stay hidden until their act has started', () => {
+  assert.equal(storyState(10, cleared(5), true, true).notes.length, 1);
+  assert.equal(storyState(5, cleared(5), true, true).notes.length, 0);
 });
 
 test('locked scenes never leave the server', () => {
@@ -78,7 +88,7 @@ test('locked scenes never leave the server', () => {
 
 test('markSeen keeps only unlocked ids, in story order, and reports a change only when there is one', () => {
   const fk = {};
-  assert.equal(markSeen(10, fk, ['c1', 'p0', 'r5', 'nope', 7]), true);
+  assert.equal(markSeen(10, fk, ['c1', 'p0', 'r5', 'c2', 'nope', 7]), true);
   assert.deepEqual(fk.sty, ['p0', 'c1']);
   assert.equal(markSeen(10, fk, ['c1']), false);
   const s = storyState(10, fk, true);
