@@ -1,11 +1,21 @@
-# Dialogue Dungeon v1.10.0
+# Dialogue Dungeon v2.0
 
 Arcade-RPG dialogue-writing practice on Cloudflare Workers + D1 + Durable Objects.
+
+## What is new in v2.0 (fewer clicks, less scrolling)
+
+Front-end only (`public/index.html`); the server and database are unchanged.
+
+- **Fight screen:** the arena shrinks on short screens and carries both HP bars; the two strike timers sit side by side as thin bars; Drink / Flee / Rules / Feedback are one compact toolbar at the top; the question is scrolled into view when it appears; the submit button stays pinned to the bottom of the question card. "Reduce motion" now lives in the Help dialog and is remembered.
+- **Profile:** a sticky Back button at the top, ▲/▼ markers in the gear dropdowns, a one-tap "Equip best gear" (best weapon by damage, best armour by defence), and collapsible "Next jobs" (open when a job point is waiting) and "Rules to practise".
+- **Shop:** owned gear that is not equipped gets an "Equip" button right in the shop.
+- **Victory / defeat:** the main button (Take the stairs down / Fight on / Try this floor again) is at the top and has keyboard focus, so Enter works; loot that beats current gear has an Equip button; the defeat screen can retry the same floor.
 
 ## What is new in v1.10 (village screen)
 
 - The pupil's starting page is now: character box (with tabs) → Guild Training Grounds prompt (only when there is an assignment or bonus) → a big "Descend the dungeon" box.
 - Dungeon Dive, the Adventurer shop, The Hush and Feedback are tabs on the character box (click a tab again to close it). The Hush tab shows how many new story parts are waiting.
+- (v1.10.1) The shop tab groups items under Melee, Ranged, Magic, Accessories and Potions (armour sits with its class; starter gear with no class sits under Melee). By default it hides items from shop levels below the pupil's current one and gear from other classes, showing only what suits the active job's whole path; "Show all items" reveals the rest. Front-end only: the server still sells everything the pupil can use.
 - The story is now strictly in order on the server (`openScenes` in `src/story.js`): a scene opens only when every scene before it is open, so "The story so far..." can never show an act the pupil has not reached by clearing the previous boss floor. Mid-boss notes stay hidden until their act has started.
 
 ## What is new in v1.9.x (teacher accounts)

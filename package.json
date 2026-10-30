@@ -1,6 +1,6 @@
 {
   "name": "dialogue-dungeon",
-  "version": "1.10.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "description": "Dialogue Dungeon: arcade-RPG dialogue-writing practice on Cloudflare Workers + D1",
