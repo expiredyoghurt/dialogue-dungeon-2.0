@@ -1,0 +1,17 @@
+{
+  "players": {
+    "swordsman": {
+      "idle":   { "frames": 4, "fps": 6 },
+      "attack": { "frames": 6, "fps": 14, "hit": 3 },
+      "hurt":   { "frames": 3, "fps": 12 },
+      "death":  { "frames": 6, "fps": 10, "hold": true }
+    }
+  },
+  "monsters": {
+    "goblin": {
+      "idle":   { "frames": 2, "fps": 4 },
+      "attack": { "frames": 4, "fps": 10, "hit": 2 },
+      "death":  { "frames": 5, "fps": 10, "hold": true }
+    }
+  }
+}
