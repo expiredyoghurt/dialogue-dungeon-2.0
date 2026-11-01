@@ -81,7 +81,7 @@ test('every item is well formed: class lines are real jobs, stats are sane, sold
 
 test('gear styles stay within a fair budget of the balanced weapon (swift, heavy and the rest are trades, not upgrades)', () => {
   const styled = [['maul', 'warhammer', 'colossus'], ['rapier', 'sabre', 'foil'], ['knuckles', 'gauntlets', 'thunderfists'], ['shortbow', 'compbow', 'galebow'], ['xbow', 'siegebow', 'ballista'], ['wand', 'stormwand', 'tempestwand'], ['mace', 'holymace', 'judgemace'], ['siphon', 'wraithstaff', 'vampstaff']];
-  for (const d of [3, 4, 5, 6]) for (const line of styled) line.forEach((id) => {
+  for (const d of [3, 4, 5, 6, 7, 8]) for (const line of styled) line.forEach((id) => {
     const it = ITEMS[id], balanced = dpsIndex(d + it.pw);
     // parry, stun and leech are worth something on top, so they may give up up to about a tenth of raw damage
     const ratio = dpsIndex(d + it.atk, it.spd, it.dbl) / balanced;
@@ -91,7 +91,7 @@ test('gear styles stay within a fair budget of the balanced weapon (swift, heavy
   const pl = { job: 'fighter', weapon: 'maul', armor: null, acc: null };
   assert.equal(gear({ ...pl, weapon: 'maul' }, cfg).bat, 4 + 8);
   assert.ok(gear({ ...pl, weapon: 'maul' }, cfg).atk > gear({ ...pl, weapon: 'maul' }, cfg).bat); // heavy: big swings, same answer strike
-  assert.equal(gear({ job: 'brawler', weapon: 'knuckles' }, cfg).bat, 6 + 8);
+  assert.equal(gear({ job: 'brawler', weapon: 'knuckles' }, cfg).bat, 8 + 8);
   assert.equal(gear({ job: 'fighter', weapon: null }, cfg).bat, 4); // plain gear: unchanged
 });
 

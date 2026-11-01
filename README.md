@@ -1,6 +1,44 @@
-# Dialogue Dungeon v2.0
+# Dialogue Dungeon v2.2.2
 
 Arcade-RPG dialogue-writing practice on Cloudflare Workers + D1 + Durable Objects.
+
+## What is new in v2.2.2 (smoother base damage)
+
+Base damage (`JOBS[..].d` in `src/gamedata.js`) now climbs in even steps instead of jumping at the top tier. Only increases; nothing was lowered, and no database change.
+
+| Job | Was | Now |
+|---|---|---|
+| Soldier | 5 | 6 |
+| Swordsman, Brawler | 6 | 8 |
+| Horse Archer, Longbowman | 5 | 6 |
+| Acolyte | 2 | 3 |
+| Adept | 3 | 4 |
+| Mage | 4 | 6 |
+| Cleric | 3 | 5 |
+| Priest | 6 | 7 |
+
+Resulting lines: Fighter 3, 4, 6, 8, 9-11; Archer 2, 3, 4, 6, 8-10; Mage 2, 3, 4, 6, 8-9; Cleric 3, 5, 7, 8. Dungeon Dive uses the same values. The gear-style budget test now also covers job damage 7 and 8.
+
+## What is new in v2.2.1 (bug-fix build, no database change)
+
+- **Kill and defeat animations finish.** The victory or defeat screen now waits for the monster's dissolve and the player's hop (or the collapse) instead of replacing the arena after 450 ms.
+- **Boss kills and monster death sprite sheets work.** The monster's type and image are remembered by the fight screen, so the boss shake and flash and any `death` sheet fire on the killing blow (the server has already ended the fight by then).
+- **Attack effects follow the job.** Archers and Scouts shoot arrows (pierce); Initiates, Acolytes, Adepts and Mages cast magic; melee jobs, including Cleric, Priest and Paladin, always slash. The fight screen reads this from the server's ranged flag.
+- **Idle sprite loop restarts every fight** (sprite sheets only).
+- **Reloading the page no longer retreats.** `GET /api/game/state` used to bank the pack, heal and (with respawn on) reset unfinished floors whenever there was no fight. It is now read-only. The village shows a "gold in your pack, not banked yet" card with a **Bank it now** button; Return to village and Flee still bank as before. Test: `test/v221.test.mjs`.
+- **Help is up to date:** the question-types note mentions the skill floors, Special gear stats mentions dodge, and "The rules" tab lists every rule, not only 1-7.
+
+## What is new in v2.1 (fight animation)
+
+Front-end only (`public/index.html`). Everything switches off with "Reduce motion" in the Help dialog.
+
+- **Attacks:** a wind-up before each lunge (archers and mages lean back and glow before firing), a slash arc, spark burst or magic ring where the hit lands, a white hit-flash on the target, a short hit-stop, and a screen shake on bonus strikes, crits and boss hits (bonus strikes and crits also get a gold flash).
+- **Moments:** monsters slide in; mid-bosses slide in under a "MID-BOSS" banner; bosses drop in with a shake and a "BOSS" banner. A defeated monster spins and dissolves in sparks and the player does a victory hop. The player's defeat is a collapse with a red flash.
+- **Sprite sheets (optional):** copy `public/p/sheets.example.json` to `public/p/sheets.json` and edit it. Nothing changes if `sheets.json` does not exist.
+  - Players are keyed by job id (the PNG name in `/p/`, e.g. `swordsman`); monsters by image name (the PNG name in `/m/`, e.g. `goblin`).
+  - Animations: `idle` (loops), `attack`, `hurt`, `death`. Each is a horizontal strip PNG of equal-width frames, default file name `<key>_<animation>.png` in `/p/` or `/m/` (override with `"file"`).
+  - `frames` and `fps` are required. `hit` is the frame where the blow lands (default: 60% through); effects and damage numbers fire then. `hold: true` keeps the last frame (use it for `death`).
+  - Frames are drawn at the same scale as the still sprite, anchored bottom-centre, so draw every frame at the still sprite's pixel scale. Missing animations fall back to the built-in motion.
 
 ## What is new in v2.0 (fewer clicks, less scrolling)
 

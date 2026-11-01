@@ -568,7 +568,7 @@ export async function route(request, env, p, path, m) {
   const { pl, f, ended, events } = await load(env, p);
   if (ended && a !== 'leave') return view(env, p, { ended, events });
   switch (a) {
-    case 'state': if (!f && pl.run_gold > 0) await leave(env, p, pl, null); break;
+    case 'state': break; // reading the state never banks the pack, heals or resets floors (v2.2.1): only an explicit leave does
     case 'start': await start(env, p, pl, f, body); break;
     case 'leave': await leave(env, p, pl, f); break;
     case 'buy': await buy(env, p, pl, f, body); break;
